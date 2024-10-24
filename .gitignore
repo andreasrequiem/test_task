@@ -1,0 +1,11 @@
+/backup/*
+/.fetch
+/_build/
+/cover/
+/deps/
+/doc/
+/tmp/
+
+*.ez
+chat_infotex-*.tar
+erl_crash.dump
