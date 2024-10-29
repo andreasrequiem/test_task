@@ -1,56 +1,20 @@
-defmodule Chat.Web.Router do
-  @moduledoc false
+defmodule Chat.Router do
+  use N2O, with: [:n2o]
 
-  use Plug.Router
-
-  alias Chat.Web.{Router, Socket}
-
-  @template "lib/chat/web/templates"
-
-  plug(:match)
-  plug(:dispatch)
-
-  plug(Plug.Parsers,
-    parsers: [:urlencoded],
-    pass: ["text/*"]
-  )
-
-  @spec render(%{:status => integer()}, String.t(), [any()]) :: Plug.Cowboy.Conn.t()
-  defp render(%{status: status} = conn, template, assigns \\ []) do
-    body =
-      @template
-      |> Path.join(template)
-      |> String.replace_suffix(".html", ".html.eex")
-      |> EEx.eval_file(assigns)
-
-    send_resp(conn, status || 200, body)
+  def init(req, opts) do
+    :n2o_cowboy.websocket_upgrade(req, opts)
   end
 
-  get("/", do: render(conn, "lobby.html"))
-
-  get "/room1" do
-    render(conn, "chat.html", room: 1)
+  def websocket_init(state) do
+    {:ok, state}
   end
 
-  get "/room2" do
-    render(conn, "chat.html", room: 2)
+  def websocket_handle({:text, msg}, state) do
+    # Обробка повідомлень від клієнта
+    {:reply, {:text, "Echo: #{msg}"}, state}
   end
 
-  get "/room3" do
-    render(conn, "chat.html", room: 3)
-  end
-
-  get "/ws" do
-    conn
-    |> WebSockAdapter.upgrade(
-      Socket,
-      [module: Router],
-      timeout: 90_000
-    )
-    |> halt()
-  end
-
-  match _ do
-    send_resp(conn, 404, "something went wrong!")
+  def websocket_info(_info, state) do
+    {:ok, state}
   end
 end

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #history {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #message {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #send, #back {
+            padding: 10px 20px;
+        }
+        #back {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="room-title">Чат</h1>
+    <div id="history"></div>
+    <input type="text" id="message" placeholder="Введіть ваше повідомлення...">
+    <button id="send">Надіслати</button>
+    <button id="back">Назад до кімнат</button>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const room = urlParams.get('room') || 'Кімната 1';
+        document.getElementById('room-title').textContent = `Чат в ${room}`;
+
+        const historyDiv = document.getElementById('history');
+        const messageInput = document.getElementById('message');
+        const sendButton = document.getElementById('send');
+        const backButton = document.getElementById('back');
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const ws = new WebSocket(`${wsProtocol}://${window.location.host}/ws`);
+
+        ws.onopen = function() {
+            ws.send(JSON.stringify({ type: 'join', room: room }));
+        };
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'message') {
+                const messageElement = document.createElement('div');
+                messageElement.innerHTML = `<b>${data.user}:</b> ${data.message}`;
+                historyDiv.appendChild(messageElement);
+                historyDiv.scrollTop = historyDiv.scrollHeight;
+            }
+        };
+
+        sendButton.onclick = function() {
+            const message = messageInput.value.trim();
+            if (message) {
+                ws.send(JSON.stringify({ type: 'message', message: message }));
+                messageInput.value = '';
+            }
+        };
+
+        backButton.onclick = function() {
+            window.location.href = '/app/rooms.htm';
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket connection closed');
+        };
+    </script>
+</body>
+</html>

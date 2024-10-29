@@ -1,4 +1,4 @@
-defmodule Chat.MixProject do
+defmodule ChatInfotex.MixProject do
   use Mix.Project
 
   def project do
@@ -6,26 +6,26 @@ defmodule Chat.MixProject do
       app: :chat_infotex,
       version: "0.1.0",
       elixir: "~> 1.17",
-      start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
 
   def application do
     [
-      extra_applications: [:logger],
-      mod: {Chat.Application, []}
+      mod: {ChatInfotex.Application, []},
+      extra_applications: [:logger, :n2o, :nitro, :kvs, :syn]
     ]
   end
 
   defp deps do
     [
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.34", runtime: false},
       {:n2o, "~> 11.9"},
       {:nitro, "~> 9.9"},
+      {:kvs, "~> 11.9"},
       {:cowboy, "~> 2.9"},
-      {:websock_adapter, "~> 0.5.7"}
+      {:jason, "~> 1.4"},
+      {:syn, "~> 2.1"},
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false}
     ]
   end
 end
